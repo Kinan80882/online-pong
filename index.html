@@ -3,70 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pong - Juego Vanilla JS</title>
+  <title>PONG - Atari 1972</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
-      font-family: 'Courier New', monospace;
-      background: linear-gradient(135deg, #0c0c0c, #1a1a2e);
-      color: #00ff88;
+      background: #000;
+      color: #fff;
+      font-family: 'Orbitron', monospace;
+      overflow: hidden;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    
-    .game-container {
-      text-align: center;
-      background: rgba(0,0,0,0.8);
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 30px #00ff88;
-      border: 2px solid #00ff88;
     }
     
     canvas {
-      border: 3px solid #00ff88;
-      border-radius: 10px;
+      border: 4px solid #fff;
       background: #000;
-      box-shadow: 0 0 20px #00ff88;
-      display: block;
-      margin: 10px auto;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
     }
+    
+    .hud {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      text-shadow: 2px 2px 0 #000;
+      z-index: 10;
+    }
+    
+    .player-score { color: #00ff41 !important; }
+    .cpu-score { color: #ff0040 !important; margin-left: 40px; }
     
     .ui {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
-      gap: 20px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      margin: 10px 0;
-    }
-    
-    .score {
-      font-size: 24px;
-      font-weight: bold;
-      min-width: 80px;
+      gap: 15px;
     }
     
     button {
-      background: linear-gradient(45deg, #00ff88, #00cc66);
-      color: #000;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 25px;
+      background: #000;
+      color: #fff;
+      border: 2px solid #fff;
+      padding: 10px 20px;
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 15px rgba(0,255,136,0.4);
+      transition: all 0.2s;
     }
     
-    button:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0,255,136,0.6); }
-    button:active { transform: scale(0.98); }
+    button:hover { background: #fff; color: #000; }
     
     .game-over {
       position: absolute;
@@ -74,270 +73,269 @@
       left: 50%;
       transform: translate(-50%, -50%);
       background: rgba(0,0,0,0.95);
-      color: #ff4444;
-      padding: 30px;
-      border-radius: 15px;
-      border: 2px solid #ff4444;
-      font-size: 24px;
+      border: 3px solid #fff;
+      padding: 40px;
       text-align: center;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 3px;
       display: none;
     }
     
-    .controls {
-      color: #888;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    
     @media (max-width: 600px) {
-      canvas { width: 90vw; height: 50vh; }
-      .ui { flex-direction: column; gap: 10px; }
+      canvas { width: 95vw; height: 50vh; }
+      .hud { font-size: 20px; }
     }
   </style>
 </head>
 <body>
-  <div class="game-container">
-    <h1>🏓 PONG</h1>
-    <div class="ui">
-      <div class="score">Jugador: <span id="playerScore">0</span></div>
-      <div class="score">CPU: <span id="cpuScore">0</span></div>
-      <div>Vel: <span id="speed">1</span>x</div>
-    </div>
-    <canvas id="pongCanvas" width="800" height="400"></canvas>
-    <div class="ui">
-      <button onclick="startGame()">▶️ Iniciar</button>
-      <button onclick="pauseGame()">⏸️ Pausa</button>
-      <button onclick="resetGame()">🔄 Reset</button>
-    </div>
-    <div class="controls">
-      🎮 W/S o ↑↓: Mover paleta | CPU automática
-    </div>
+  <canvas id="pongCanvas" width="800" height="600"></canvas>
+  
+  <div class="hud">
+    <span class="player-score" id="playerScore">0</span>
+    <span class="cpu-score" id="cpuScore">0</span>
+  </div>
+  
+  <div class="ui">
+    <button onclick="startGame()">START</button>
+    <button onclick="pauseGame()">PAUSE</button>
+    <button onclick="resetGame()">RESET</button>
   </div>
   
   <div class="game-over" id="gameOver">
-    <h2 id="winnerText">¡GAME OVER!</h2>
-    <p id="finalScore"></p>
-    <button onclick="resetGame()">Jugar de nuevo</button>
+    <div id="winnerText">GAME OVER</div>
+    <div style="font-size: 18px; margin: 20px 0;">FINAL: <span id="finalScore">0 - 0</span></div>
+    <button onclick="resetGame()">NEW GAME</button>
   </div>
 
   <script>
     const canvas = document.getElementById('pongCanvas');
     const ctx = canvas.getContext('2d');
     
+    // Configuración ORIGINAL Atari Pong (proporciones exactas)
+    const PADDLE_WIDTH = 10;
+    const PADDLE_HEIGHT = 100;
+    const BALL_SIZE = 10;
+    const FIELD_WIDTH = 800;
+    const FIELD_HEIGHT = 600;
+    
     // Estado del juego
     let gameState = {
-      player: { y: 150, score: 0, width: 15, height: 80 },
-      cpu: { y: 150, score: 0, width: 15, height: 80 },
-      ball: { x: 400, y: 200, vx: 5, vy: 3, radius: 8 },
-      speed: 1,
-      paused: true,
+      player: { x: 30, y: (FIELD_HEIGHT - PADDLE_HEIGHT) / 2, score: 0 },
+      cpu: { x: FIELD_WIDTH - 40, y: (FIELD_HEIGHT - PADDLE_HEIGHT) / 2, score: 0 },
+      ball: { x: FIELD_WIDTH / 2, y: FIELD_HEIGHT / 2, vx: 0, vy: 0, size: BALL_SIZE },
+      gameRunning: false,
+      gamePaused: true,
       gameOver: false,
-      keys: {}
+      keys: {},
+      paddleSpeed: 7,
+      ballSpeed: 4
     };
     
-    // Audio simple (Web Audio API)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    function playSound(frequency, duration) {
+    // Sonidos 8-bit originales
+    function beep(frequency, duration) {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
+      
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
+      
       oscillator.frequency.value = frequency;
       oscillator.type = 'square';
-      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      
+      gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      
       oscillator.start(audioCtx.currentTime);
       oscillator.stop(audioCtx.currentTime + duration);
     }
     
-    // Input
+    // Controles originales (W/S)
     document.addEventListener('keydown', (e) => {
       gameState.keys[e.key.toLowerCase()] = true;
-      if (e.key === 'w' || e.key === 's' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-        e.preventDefault();
-      }
     });
     
     document.addEventListener('keyup', (e) => {
       gameState.keys[e.key.toLowerCase()] = false;
     });
     
-    // Movimiento jugador
+    // Update jugador (W/S)
     function updatePlayer() {
-      const paddleSpeed = 6;
-      if (gameState.keys['w'] || gameState.keys['arrowup']) {
-        gameState.player.y = Math.max(0, gameState.player.y - paddleSpeed);
+      if (gameState.keys['w'] && gameState.player.y > 0) {
+        gameState.player.y -= gameState.paddleSpeed;
       }
-      if (gameState.keys['s'] || gameState.keys['arrowdown']) {
-        gameState.player.y = Math.min(canvas.height - gameState.player.height, gameState.player.y + paddleSpeed);
+      if (gameState.keys['s'] && gameState.player.y < FIELD_HEIGHT - PADDLE_HEIGHT) {
+        gameState.player.y += gameState.paddleSpeed;
       }
     }
     
-    // IA CPU simple (sigue bola con delay)
+    // CPU original (predicción + error humano)
     function updateCPU() {
-      const cpuSpeed = 3 + gameState.speed * 0.5;
+      const centerY = gameState.cpu.y + PADDLE_HEIGHT / 2;
       const ballCenterY = gameState.ball.y;
-      if (gameState.cpu.y + gameState.cpu.height / 2 < ballCenterY - 20) {
-        gameState.cpu.y += cpuSpeed;
-      } else if (gameState.cpu.y + gameState.cpu.height / 2 > ballCenterY + 20) {
-        gameState.cpu.y -= cpuSpeed;
+      const predictionError = (Math.random() - 0.5) * 20; // "Humano"
+      
+      if (centerY < ballCenterY + predictionError) {
+        gameState.cpu.y += Math.min(5, (ballCenterY - centerY) * 0.1);
+      } else if (centerY > ballCenterY + predictionError) {
+        gameState.cpu.y -= Math.min(5, (centerY - ballCenterY) * 0.1);
       }
       
-      // Limites CPU
-      gameState.cpu.y = Math.max(0, Math.min(canvas.height - gameState.cpu.height, gameState.cpu.y));
+      gameState.cpu.y = Math.max(0, Math.min(FIELD_HEIGHT - PADDLE_HEIGHT, gameState.cpu.y));
     }
     
-    // Física bola
+    // Física bola ORIGINAL (ángulos precisos)
     function updateBall() {
-      gameState.ball.x += gameState.ball.vx * gameState.speed;
-      gameState.ball.y += gameState.ball.vy * gameState.speed;
+      gameState.ball.x += gameState.ball.vx;
+      gameState.ball.y += gameState.ball.vy;
       
-      // Rebote paredes superior/inferior
-      if (gameState.ball.y - gameState.ball.radius <= 0 || gameState.ball.y + gameState.ball.radius >= canvas.height) {
+      // Rebote techo/suelo
+      if (gameState.ball.y <= 0 || gameState.ball.y >= FIELD_HEIGHT) {
         gameState.ball.vy *= -1;
-        playSound(300, 0.1);
+        beep(220, 0.05);
       }
       
-      // Colisión jugador
-      if (gameState.ball.x - gameState.ball.radius <= gameState.player.x + gameState.player.width &&
-          gameState.ball.y > gameState.player.y && gameState.ball.y < gameState.player.y + gameState.player.height) {
-        gameState.ball.vx *= -1.05; // Speed up
-        gameState.ball.vy += (gameState.ball.y - (gameState.player.y + gameState.player.height / 2)) * 0.2;
-        playSound(600, 0.08);
+      // Colisión jugador (lado izquierdo)
+      if (gameState.ball.x - gameState.ball.size/2 <= gameState.player.x + PADDLE_WIDTH &&
+          gameState.ball.x + gameState.ball.size/2 >= gameState.player.x &&
+          gameState.ball.y > gameState.player.y && gameState.ball.y < gameState.player.y + PADDLE_HEIGHT) {
+        
+        gameState.ball.vx *= -1;
+        // Ángulo basado en dónde golpea la paleta
+        const hitPos = (gameState.ball.y - (gameState.player.y + PADDLE_HEIGHT/2)) / (PADDLE_HEIGHT/2);
+        gameState.ball.vy = hitPos * gameState.ballSpeed;
+        beep(440, 0.06);
       }
       
-      // Colisión CPU
-      if (gameState.ball.x + gameState.ball.radius >= gameState.cpu.x &&
-          gameState.ball.y > gameState.cpu.y && gameState.ball.y < gameState.cpu.y + gameState.cpu.height) {
-        gameState.ball.vx *= -1.05;
-        gameState.ball.vy += (gameState.ball.y - (gameState.cpu.y + gameState.cpu.height / 2)) * 0.2;
-        playSound(600, 0.08);
+      // Colisión CPU (lado derecho)
+      if (gameState.ball.x + gameState.ball.size/2 >= gameState.cpu.x &&
+          gameState.ball.x - gameState.ball.size/2 <= gameState.cpu.x + PADDLE_WIDTH &&
+          gameState.ball.y > gameState.cpu.y && gameState.ball.y < gameState.cpu.y + PADDLE_HEIGHT) {
+        
+        gameState.ball.vx *= -1;
+        const hitPos = (gameState.ball.y - (gameState.cpu.y + PADDLE_HEIGHT/2)) / (PADDLE_HEIGHT/2);
+        gameState.ball.vy = hitPos * gameState.ballSpeed;
+        beep(440, 0.06);
       }
       
-      // Gol player (CPU scores)
-      if (gameState.ball.x + gameState.ball.radius < 0) {
+      // Gol (puntuación)
+      if (gameState.ball.x < 0) {
         gameState.cpu.score++;
-        resetBall();
-        playSound(200, 0.2);
-        updateUI();
-        checkGameOver();
+        resetBall(true);
+        beep(110, 0.15);
+      } else if (gameState.ball.x > FIELD_WIDTH) {
+        gameState.player.score++;
+        resetBall(false);
+        beep(880, 0.15);
       }
       
-      // Gol CPU (player scores)
-      if (gameState.ball.x - gameState.ball.radius > canvas.width) {
-        gameState.player.score++;
-        resetBall();
-        playSound(800, 0.2);
-        updateUI();
-        checkGameOver();
-      }
+      updateUI();
+      checkWin();
     }
     
-    function resetBall() {
-      gameState.ball.x = canvas.width / 2;
-      gameState.ball.y = canvas.height / 2;
-      gameState.ball.vx = (Math.random() > 0.5 ? 1 : -1) * 5;
-      gameState.ball.vy = (Math.random() - 0.5) * 6;
+    function resetBall(playerScored) {
+      gameState.ball.x = FIELD_WIDTH / 2;
+      gameState.ball.y = FIELD_HEIGHT / 2;
+      gameState.ball.vx = (playerScored ? 1 : -1) * gameState.ballSpeed;
+      gameState.ball.vy = (Math.random() - 0.5) * 3;
     }
     
-    function checkGameOver() {
-      if (gameState.player.score >= 7 || gameState.cpu.score >= 7) {
+    function checkWin() {
+      if (gameState.player.score >= 11 || gameState.cpu.score >= 11) {
         gameState.gameOver = true;
-        document.getElementById('gameOver').style.display = 'block';
+        const gameOverEl = document.getElementById('gameOver');
+        gameOverEl.style.display = 'block';
         document.getElementById('winnerText').textContent = 
-          gameState.player.score >= 7 ? '¡VICTORIA!' : 'Derrota...';
+          gameState.player.score >= 11 ? 'PLAYER WINS!' : 'CPU WINS!';
         document.getElementById('finalScore').textContent = 
-          `Final: ${gameState.player.score} - ${gameState.cpu.score}`;
+          `${gameState.player.score} - ${gameState.cpu.score}`;
       }
     }
     
     function updateUI() {
       document.getElementById('playerScore').textContent = gameState.player.score;
       document.getElementById('cpuScore').textContent = gameState.cpu.score;
-      document.getElementById('speed').textContent = gameState.speed.toFixed(1);
     }
     
+    // Render PIXEL PERFECT (como Atari)
     function draw() {
-      // Limpiar
+      // Limpiar con flicker TV effect
       ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, FIELD_WIDTH, FIELD_HEIGHT);
       
-      // Línea central
-      ctx.strokeStyle = '#00ff88';
-      ctx.lineWidth = 4;
-      ctx.setLineDash([10, 10]);
+      // Línea central punteada (estilo Pong)
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.setLineDash([20, 20]);
       ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 0);
-      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.moveTo(FIELD_WIDTH/2, 20);
+      ctx.lineTo(FIELD_WIDTH/2, FIELD_HEIGHT - 20);
       ctx.stroke();
       ctx.setLineDash([]);
       
-      // Paleta jugador (izquierda)
-      ctx.fillStyle = '#00ff88';
-      ctx.fillRect(20, gameState.player.y, gameState.player.width, gameState.player.height);
+      // Paleta jugador (verde original)
+      ctx.fillStyle = '#00ff41';
+      ctx.fillRect(gameState.player.x, gameState.player.y, PADDLE_WIDTH, PADDLE_HEIGHT);
       
-      // Paleta CPU (derecha)
-      ctx.fillStyle = '#ff4488';
-      ctx.fillRect(canvas.width - 35, gameState.cpu.y, gameState.cpu.width, gameState.cpu.height);
+      // Paleta CPU (rojo original)
+      ctx.fillStyle = '#ff0040';
+      ctx.fillRect(gameState.cpu.x, gameState.cpu.y, PADDLE_WIDTH, PADDLE_HEIGHT);
       
-      // Bola
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(gameState.ball.x, gameState.ball.y, gameState.ball.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowColor = '#ffffff';
-      ctx.shadowBlur = 10;
-      ctx.strokeStyle = '#00ff88';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
+      // Bola blanca clásica
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(gameState.ball.x - gameState.ball.size/2, 
+                   gameState.ball.y - gameState.ball.size/2, 
+                   gameState.ball.size, gameState.ball.size);
     }
     
+    // Game Loop 60fps
     function gameLoop() {
-      if (!gameState.paused && !gameState.gameOver) {
+      if (gameState.gameRunning && !gameState.gamePaused && !gameState.gameOver) {
         updatePlayer();
         updateCPU();
         updateBall();
-        gameState.speed = 1 + (gameState.player.score + gameState.cpu.score) * 0.1;
       }
       draw();
       requestAnimationFrame(gameLoop);
     }
     
-    // Controles
+    // Controles UI
     function startGame() {
-      gameState.paused = false;
+      gameState.gameRunning = true;
+      gameState.gamePaused = false;
       gameState.gameOver = false;
       document.getElementById('gameOver').style.display = 'none';
+      resetBall(true);
     }
     
     function pauseGame() {
-      gameState.paused = !gameState.paused;
+      gameState.gamePaused = !gameState.gamePaused;
     }
     
     function resetGame() {
       gameState.player.score = 0;
       gameState.cpu.score = 0;
-      gameState.speed = 1;
-      gameState.paused = true;
+      gameState.gamePaused = true;
       gameState.gameOver = false;
-      resetBall();
+      gameState.gameRunning = false;
+      resetBall(true);
       updateUI();
       document.getElementById('gameOver').style.display = 'none';
     }
     
-    // Responsive canvas
-    function resizeCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+    // Responsive
+    function resize() {
+      const scale = Math.min(window.innerWidth / FIELD_WIDTH, window.innerHeight / FIELD_HEIGHT) * 0.9;
+      canvas.style.width = FIELD_WIDTH * scale + 'px';
+      canvas.style.height = FIELD_HEIGHT * scale + 'px';
     }
     
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    window.addEventListener('resize', resize);
+    resize();
     
-    // Iniciar juego
+    // ¡PONG ATARI LISTO!
     updateUI();
     gameLoop();
   </script>
